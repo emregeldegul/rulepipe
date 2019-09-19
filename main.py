@@ -10,24 +10,10 @@ class RuleOperations(object):
         "eq": lambda a,b: a == b,
         "ne": lambda a,b: a != b,
         "mod": lambda a,b: a % b,
+        "sum": lambda *args: sum(args),
         "any": lambda *args: any(args),
         "all": lambda *args: all(args)
         }
-
-    @staticmethod
-    def gt(a, b):
-        return a > b
-
-    @staticmethod
-    def add(*args):
-        return sum(args)
-
-    @staticmethod
-    def multiply(*args):
-        result = 1
-        for arg in args:
-            result *= arg
-        return result
 
     @staticmethod
     def eval(rule, data):
