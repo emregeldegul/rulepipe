@@ -1,4 +1,5 @@
 # rulepipe
+
 The rule engine you always deserved.
 
 RulePipe is a declarative, scalable, highly configurable rule engine. Usage areas include, but not limited to;
@@ -11,14 +12,25 @@ RulePipe is a declarative, scalable, highly configurable rule engine. Usage area
 - Domain specific complex rule inputs
 
 ## Installation
-Currently, RulePipe uses no external Python package. It is written in Python3.
 
-- Cloning this repository
-- Running `python3 main.py`
+RulePipe uses no external Python package as a module. But, to use RulePipe
+as a service with REST API, install flask package. RulePipe is written in
+Python3.
 
-Is enough for installing RulePile.
+### Pre-installation
+
+- Install flask `pip3 install flask`
+
+### Run RulePipe REST API Service
+
+- Clone this repository `git clone https://git.ray.kim/guray/rulepipe.git`
+- Change directory to repository directory `cd rulepipe`
+- Run flask service `export FLASK_APP=api.py && python3 -m flask run`
+
+Is enough for installing and using RulePile as a RESTful service.
 
 ## RoadMap
+
 - [x] Add REST API
 - [ ] Support subfields in JSON (probably needs dot notation)
 - [ ] Support nested rules
