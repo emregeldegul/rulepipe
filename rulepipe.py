@@ -10,9 +10,9 @@ class RuleOperations(object):
         "eq": lambda a,b: a == b,
         "ne": lambda a,b: a != b,
         "mod": lambda a,b: a % b,
-        "sum": lambda *args: sum(args),
-        "any": lambda *args: any(args),
-        "all": lambda *args: all(args)
+        "sum": lambda args: sum(args),
+        "any": lambda args: any(args),
+        "all": lambda args: all(args)
         }
 
     @staticmethod
@@ -32,6 +32,7 @@ class RuleOperations(object):
         )
         )
         print(RuleOperations.operations[condition](data, value))
+        return RuleOperations.operations[condition](data, value)
 
 
 class RuleManager(object):
@@ -46,12 +47,27 @@ class RuleManager(object):
             self._rules = {}
             self.db = self._rules
 
+    def add_rule_json_as_string(self, name, rule_string):
+        """
+        Adds a JSON formatted string rule into Rule Database as JSON
+        """
+        self.add_rule_json(name, json.loads(rule_string))
+
     def add_rule_json(self, name, rule):
         """
         Adds a rule into Rule Database as JSON
         """
-        self.db[name] = json.loads(rule)
-        print("Info about rule:", type(self.db[name][0]), self.db[name][0])
+        if not name in self.db.keys():
+            self.db[name] = []
+
+        self.db[name].append(rule)
+        #print("Info about rule:", type(self.db[name]), self.db[name])
+
+    def execute_rule_json_as_string(self, name, data_string):
+        """
+        Runs a JSON formatted rule string and returns the result
+        """
+        return self.execute_rule_json(name, json.loads(data_string))
 
     def execute_rule_json(self, name, data):
         """
@@ -60,8 +76,9 @@ class RuleManager(object):
         if not name in self.db.keys():
             print("Rule not found.")
             return
+
         flow = self.db[name]
-        self.processSteps(flow, data)
+        return self.processSteps(flow, data)
         # for step in flow:
         # step["Match"]
 
@@ -84,7 +101,6 @@ class RuleManager(object):
         pass
 
     def processRule(self, step, data):
-        data = json.loads(data)
         results = []
         for rule in step["Rules"]:
             results.append(RuleOperations.eval(rule, data))
@@ -92,12 +108,12 @@ class RuleManager(object):
         return RuleOperations.operations[step["Match"]](results)
 
     def processSteps(self, flow, data):
-
         for step in flow:
             if step["Type"] == "rule":
                 result = self.processRule(step, data)
                 print("Result:", result)
-        
+                return result
+
             if step["Type"] == "ruleset":
                 pass
 
@@ -105,7 +121,7 @@ class RuleManager(object):
 if __name__ == "__main__":
     print("Starting to work with an in memory database...")
     rules = RuleManager()
-    rules.add_rule_json("guray", """[
+    rules.add_rule_json_as_string("guray", """
     {
         "Type": "rule",
         "Match": "all",
@@ -129,10 +145,15 @@ if __name__ == "__main__":
                 "value": 200
             }
         ]
-    }]""")
-    rules.execute_rule_json("guray", """{
+    }
+    """)
+
+    rules.execute_rule_json_as_string("guray", """
+    {
         "responseTimeInSeconds": 3,
         "statusCode": 201
-    }""")
+    }
+    """)
+
     print("Rule Manager Started")
     myRule = """{"all": {}}"""
