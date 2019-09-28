@@ -19,7 +19,7 @@ Currently, RulePipe uses no external Python package. It is written in Python3.
 Is enough for installing RulePile.
 
 ## RoadMap
-- [] Add REST API
+- [x] Add REST API
 - [] Support subfields in JSON (probably needs dot notation)
 - [] Support nested rules
 - [] Add persistent DB (maybe MongoDB)
