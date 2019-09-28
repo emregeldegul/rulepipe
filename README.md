@@ -34,7 +34,7 @@ Is enough for installing and using RulePile as a RESTful service.
 - [x] Add REST API
 - [ ] Support subfields in JSON (probably needs dot notation)
 - [ ] Support nested rules
-- [ ] Add persistent DB (maybe MongoDB)
+- [x] Add persistent DB (maybe MongoDB)
 - [ ] Add cache for rules (maybe Redis)
 - [ ] Support defining custom conditions
 - [ ] Support predefined actions
