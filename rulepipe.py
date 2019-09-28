@@ -1,4 +1,6 @@
 import json
+from db_mongo import Mongo
+from db_local import LocalDB
 
 class RuleOperations(object):
 
@@ -36,7 +38,7 @@ class RuleOperations(object):
 
 
 class RuleManager(object):
-    def __init__(self, db='local'):
+    def __init__(self, db='local', db_address='', db_name='rulepipe'):
         """
         Initializes a Rule Management with specified database.
         
@@ -44,8 +46,14 @@ class RuleManager(object):
         In "local" db, it will not be persistent.
         """
         if db == "local":
-            self._rules = {}
-            self.db = self._rules
+            print("Starting to work with an in memory database...")
+            self.db = LocalDB()
+        elif db == "mongo" or db == "mongodb":
+            print("Starting to work with MongoDB. Connecting to ", 
+                db_address, "-> Database Name: " , db_name)
+            self.db = Mongo()
+        else:
+            print("This database type is not supporting.")
 
     def add_rule_json_as_string(self, name, rule_string):
         """
@@ -57,10 +65,7 @@ class RuleManager(object):
         """
         Adds a rule into Rule Database as JSON
         """
-        if not name in self.db.keys():
-            self.db[name] = []
-
-        self.db[name].append(rule)
+        self.db.add_rule(name, rule)
         #print("Info about rule:", type(self.db[name]), self.db[name])
 
     def execute_rule_json_as_string(self, name, data_string):
@@ -73,11 +78,7 @@ class RuleManager(object):
         """
         Runs rule using given data and returns the result
         """
-        if not name in self.db.keys():
-            print("Rule not found.")
-            return
-
-        flow = self.db[name]
+        flow = self.db.get_flow(name)
         return self.processSteps(flow, data)
         # for step in flow:
         # step["Match"]
@@ -109,6 +110,7 @@ class RuleManager(object):
 
     def processSteps(self, flow, data):
         for step in flow:
+            print("step type: " , type(step), " : " ,  step)
             if step["Type"] == "rule":
                 result = self.processRule(step, data)
                 print("Result:", result)
@@ -119,8 +121,15 @@ class RuleManager(object):
 
 
 if __name__ == "__main__":
-    print("Starting to work with an in memory database...")
-    rules = RuleManager()
+    db_ip = "localhost"
+    db_port = 27017
+    db_user = "rulepipe"
+    db_pass = "password"
+    #db_connect_url = "mongodb://" + db_user + ":" + db_pass + "@" + db_ip + ":" + str(db_port)
+    db_connect_url = "mongodb://localhost:27017/"
+    print("Rule Manager Started")
+
+    rules = RuleManager(db="mongo", db_address=db_connect_url)
     rules.add_rule_json_as_string("guray", """
     {
         "Type": "rule",
@@ -150,10 +159,7 @@ if __name__ == "__main__":
 
     rules.execute_rule_json_as_string("guray", """
     {
-        "responseTimeInSeconds": 3,
+        "responseTimeInSeconds": 5,
         "statusCode": 201
     }
     """)
-
-    print("Rule Manager Started")
-    myRule = """{"all": {}}"""
