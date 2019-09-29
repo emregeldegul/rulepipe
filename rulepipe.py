@@ -88,8 +88,16 @@ class RuleManager(object):
         rule_key = name + "_" + str(data)
         if(self.redis.get(rule_key) == None):
             print("Statement not found in cache, executing...")
-            flow = self.db.get_flow(name)
-            response = self.processSteps(flow, data)
+            if(self.redis.get(name) == None):
+                print("Rule flow not found in cache, fetching from db...")
+                flow = self.db.get_flow(name)
+                print("Rule fetched, caching...")
+                self.redis.set(name, str(flow))
+            else:
+                print("Rule flow found in cache, fetching...")
+                flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
+
+            response = self.process_steps(flow, data)
             print("Statement execute completed. Caching...")
             self.redis.set(rule_key, str(response))
         else:
@@ -124,7 +132,7 @@ class RuleManager(object):
         # return getattr(RuleOperations, step["Match"])(results)
         return RuleOperations.operations[step["Match"]](results)
 
-    def processSteps(self, flow, data):
+    def process_steps(self, flow, data):
         for step in flow:
             print("step type: " , type(step), " : " ,  step)
             if step["Type"] == "rule":
