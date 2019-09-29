@@ -1,4 +1,5 @@
 import json
+from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
 
@@ -39,6 +40,10 @@ class RuleOperations(object):
 
 class RuleManager(object):
     def __init__(self, db='local', db_address='', db_name='rulepipe'):
+        self.init_database_client(db, db_address, db_name)
+        self.init_redis_client()
+
+    def init_database_client(self, db, db_address, db_name):
         """
         Initializes a Rule Management with specified database.
         
@@ -49,11 +54,13 @@ class RuleManager(object):
             print("Starting to work with an in memory database...")
             self.db = LocalDB()
         elif db == "mongo" or db == "mongodb":
-            print("Starting to work with MongoDB. Connecting to ", 
-                db_address, "-> Database Name: " , db_name)
+            print("Starting to work with MongoDB.")
             self.db = Mongo()
         else:
             print("This database type is not supporting.")
+
+    def init_redis_client(self, host="localhost", port=6379):
+        self.redis = Redis(host, port)
 
     def add_rule_json_as_string(self, name, rule_string):
         """
@@ -78,8 +85,17 @@ class RuleManager(object):
         """
         Runs rule using given data and returns the result
         """
-        flow = self.db.get_flow(name)
-        return self.processSteps(flow, data)
+        rule_key = name + "_" + str(data)
+        if(self.redis.get(rule_key) == None):
+            print("Statement not found in cache, executing...")
+            flow = self.db.get_flow(name)
+            response = self.processSteps(flow, data)
+            print("Statement execute completed. Caching...")
+            self.redis.set(rule_key, str(response))
+        else:
+            print("Statement fount in cache, fetching...")
+            response = str(self.redis.get(rule_key), 'utf-8')
+        return response
         # for step in flow:
         # step["Match"]
 
