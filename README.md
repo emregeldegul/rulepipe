@@ -102,7 +102,7 @@ be as:
 - [ ] Support subfields in JSON (probably needs dot notation)
 - [ ] Support nested rules
 - [x] Add persistent DB (maybe MongoDB)
-- [ ] Add cache for rules (maybe Redis)
+- [x] Add cache for rules (maybe Redis)
 - [x] Add cache for statement return values
 - [ ] Support defining custom conditions
 - [ ] Support predefined actions
