@@ -103,6 +103,7 @@ be as:
 - [ ] Support nested rules
 - [x] Add persistent DB (maybe MongoDB)
 - [ ] Add cache for rules (maybe Redis)
+- [x] Add cache for statement return values
 - [ ] Support defining custom conditions
 - [ ] Support predefined actions
 - [ ] Support defining custom actions
