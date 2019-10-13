@@ -109,3 +109,4 @@ be as:
 - [ ] Support predefined actions
 - [ ] Support defining custom actions
 - [ ] Set hash of data as Redis keys
+- [ ] Add webhooks for Telegram to track progress
