@@ -1,3 +1,4 @@
+import logging
 class LocalDB:
     def __init__(self):
         self.db = {}
@@ -9,6 +10,6 @@ class LocalDB:
 
     def get_flow(self, name):
         if not name in self.db.keys():
-            print("Rule not found.")
+            logging.error("Rule not found.")
             return
         return self.db[name]

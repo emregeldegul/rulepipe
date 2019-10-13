@@ -1,4 +1,5 @@
 import json
+import logging
 from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
@@ -20,8 +21,7 @@ class RuleOperations(object):
 
     @staticmethod
     def eval(rule, data):
-        print(type(rule), rule)
-        print(type(data), data)
+        logging.debug("Evauluating: " + str(data))
         return RuleOperations.get_operation(
                 rule["condition"],
                 data[rule["field"]],
@@ -30,16 +30,16 @@ class RuleOperations(object):
 
     @staticmethod
     def get_operation(condition, data, value):
-        print("Incoming:\n\tCondition: {}\n\tData: {}\n\tValue: {}".format(
-            condition, data, value
-        )
-        )
-        print(RuleOperations.operations[condition](data, value))
+        logging.debug("Condition: {}, Data: {}, Value: {}".format(
+            condition, data, value))
+        logging.debug(RuleOperations.operations[condition](data, value))
         return RuleOperations.operations[condition](data, value)
 
 
 class RuleManager(object):
     def __init__(self, db='local', db_address='', db_name='rulepipe'):
+        logging.info('Rule manager initializing')
+        logging.debug('Database client initializing')
         self.init_database_client(db, db_address, db_name)
         self.init_redis_client()
 
@@ -51,13 +51,13 @@ class RuleManager(object):
         In "local" db, it will not be persistent.
         """
         if db == "local":
-            print("Starting to work with an in memory database...")
+            logging.info("Database type: In-memory database")
             self.db = LocalDB()
         elif db == "mongo" or db == "mongodb":
-            print("Starting to work with MongoDB.")
+            logging.info("Database type: MongoDB.")
             self.db = Mongo()
         else:
-            print("This database type is not supporting.")
+            logging.error("This database type is not supporting.")
 
     def init_redis_client(self, host="localhost", port=6379):
         self.redis = Redis(host, port)
@@ -73,7 +73,6 @@ class RuleManager(object):
         Adds a rule into Rule Database as JSON
         """
         self.db.add_rule(name, rule)
-        #print("Info about rule:", type(self.db[name]), self.db[name])
 
     def execute_rule_json_as_string(self, name, data_string):
         """
@@ -87,25 +86,23 @@ class RuleManager(object):
         """
         rule_key = name + "_" + str(data)
         if(self.redis.get(rule_key) == None):
-            print("Statement not found in cache, executing...")
+            logging.debug("Statement not found in cache, executing...")
             if(self.redis.get(name) == None):
-                print("Rule flow not found in cache, fetching from db...")
+                logging.debug("Rule flow not found in cache, fetching from db...")
                 flow = self.db.get_flow(name)
-                print("Rule fetched, caching...")
+                logging.debug("Rule fetched, caching...")
                 self.redis.set(name, str(flow))
             else:
-                print("Rule flow found in cache, fetching...")
+                logging.debug("Rule flow found in cache, fetching...")
                 flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
 
             response = self.process_steps(flow, data)
-            print("Statement execute completed. Caching...")
+            logging.debug("Statement execute completed. Caching...")
             self.redis.set(rule_key, str(response))
         else:
-            print("Statement fount in cache, fetching...")
+            logging.debug("Statement fount in cache, fetching...")
             response = str(self.redis.get(rule_key), 'utf-8')
         return response
-        # for step in flow:
-        # step["Match"]
 
     def add_rule_code(self, name, rule):
         """
@@ -114,6 +111,7 @@ class RuleManager(object):
         DANGER: Be really careful if you are planning to use this.
         May be INSECURE.
         """
+        logging.critical("This function is not activated yet: add_rule_code")
         self.add_rule_json(name, rule)
 
     def execute_rule_code(self, name, data):
@@ -123,21 +121,21 @@ class RuleManager(object):
         DANGER: Be really careful if you are planning to use this.
         May be INSECURE.
         """
+        logging.critical("This function is not activated yet: execute_rule_code")
         pass
 
     def processRule(self, step, data):
         results = []
         for rule in step["Rules"]:
             results.append(RuleOperations.eval(rule, data))
-        # return getattr(RuleOperations, step["Match"])(results)
         return RuleOperations.operations[step["Match"]](results)
 
     def process_steps(self, flow, data):
         for step in flow:
-            print("step type: " , type(step), " : " ,  step)
+            logging.debug("Processing Step: " +  str(step))
             if step["Type"] == "rule":
                 result = self.processRule(step, data)
-                print("Result:", result)
+                logging.debug("Result: " + str(result))
                 return result
 
             if step["Type"] == "ruleset":
@@ -145,15 +143,15 @@ class RuleManager(object):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     db_ip = "localhost"
     db_port = 27017
     db_user = "rulepipe"
     db_pass = "password"
     #db_connect_url = "mongodb://" + db_user + ":" + db_pass + "@" + db_ip + ":" + str(db_port)
     db_connect_url = "mongodb://localhost:27017/"
-    print("Rule Manager Started")
 
-    rules = RuleManager(db="mongo", db_address=db_connect_url)
+    rules = RuleManager(db="local", db_address=db_connect_url)
     rules.add_rule_json_as_string("guray", """
     {
         "Type": "rule",

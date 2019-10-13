@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import json
+import logging
 class Mongo:
     def __init__(self, ip="localhost", port=27017, username="", 
         password="", auth=False, db_name="rulepipe"):
@@ -15,7 +16,7 @@ class Mongo:
         if db_name in self.client.list_database_names():
             self.db = self.client[db_name]
         else:
-            print(db_name, " database not exists in", ip)
+            logging.error(str(db_name) + " database not exists in " + str(ip))
 
     def add_rule(self, name, rule):
         return self.db["rules"].insert_one({"name": name, "rule": str(rule)})
