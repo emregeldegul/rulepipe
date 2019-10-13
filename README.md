@@ -111,3 +111,4 @@ be as:
 - [ ] Set hash of data as Redis keys
 - [x] Add webhooks for Telegram to track progress
 - [ ] Support for OpenTracing
+- [ ] Add logging and use log levels
