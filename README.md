@@ -101,6 +101,7 @@ be as:
 - [x] Add REST API
 - [ ] Support subfields in JSON (probably needs dot notation)
 - [ ] Support nested rules
+- [ ] Read database information from config file and environment variables
 - [x] Add persistent DB (maybe MongoDB)
 - [x] Add cache for rules (maybe Redis)
 - [x] Add cache for statement return values
