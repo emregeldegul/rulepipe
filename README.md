@@ -19,7 +19,19 @@ Python3.
 
 ### Pre-installation
 
-- Install flask `pip3 install flask`
+Please install the necessary packages.
+
+```sh
+~$ pip install -r requirements.txt
+```
+
+And rename the .env.example file to .env.
+
+```sh
+~$ mv .env.example .env
+```
+
+Then we make the database settings in the .env file.
 
 ### Run RulePipe REST API Service
 

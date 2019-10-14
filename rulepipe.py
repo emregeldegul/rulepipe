@@ -1,8 +1,10 @@
+import os
 import json
 import logging
 from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
+from dotenv import load_dotenv
 
 class RuleOperations(object):
 
@@ -46,7 +48,7 @@ class RuleManager(object):
     def init_database_client(self, db, db_address, db_name):
         """
         Initializes a Rule Management with specified database.
-        
+
         By default, local (and in-memory) dictionary object is used as a DB.
         In "local" db, it will not be persistent.
         """
@@ -144,10 +146,12 @@ class RuleManager(object):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    db_ip = "localhost"
-    db_port = 27017
-    db_user = "rulepipe"
-    db_pass = "password"
+    load_dotenv()
+
+    db_ip = os.getenv("mdb_server")
+    db_port = os.getenv("mdb_port")
+    db_user = os.getenv("mdb_user")
+    db_pass = os.getenv("mdb_pass")
     #db_connect_url = "mongodb://" + db_user + ":" + db_pass + "@" + db_ip + ":" + str(db_port)
     db_connect_url = "mongodb://localhost:27017/"
 
