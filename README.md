@@ -110,17 +110,25 @@ be as:
 
 ## RoadMap
 
-- [x] Add REST API
+In Progress:
+
+- [ ] Set hash of data as Redis keys
+
+To Do:
+
 - [ ] Support subfields in JSON (probably needs dot notation)
 - [ ] Support nested rules
-- [ ] Read database information from config file and environment variables
-- [x] Add persistent DB (maybe MongoDB)
-- [x] Add cache for rules (maybe Redis)
-- [x] Add cache for statement return values
 - [ ] Support defining custom conditions
 - [ ] Support predefined actions
 - [ ] Support defining custom actions
-- [ ] Set hash of data as Redis keys
-- [x] Add webhooks for Telegram to track progress
 - [ ] Support for OpenTracing
+
+Completed:
+
+- [x] Add REST API
+- [x] Add persistent DB (maybe MongoDB)
+- [x] Add cache for rules (maybe Redis)
+- [x] Add cache for statement return values
+- [x] Add webhooks for Telegram to track progress
 - [x] Add logging and use log levels
+- [x] Read database information from config file and environment variables
