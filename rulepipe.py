@@ -97,12 +97,11 @@ class RuleManager(object):
             else:
                 logging.debug("Rule flow found in cache, fetching...")
                 flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
-
             response = self.process_steps(flow, data)
             logging.debug("Statement execute completed. Caching...")
             self.redis.set(rule_key, str(response))
         else:
-            logging.debug("Statement fount in cache, fetching...")
+            logging.debug("Statement found in cache, fetching...")
             response = str(self.redis.get(rule_key), 'utf-8')
         return response
 
@@ -135,13 +134,19 @@ class RuleManager(object):
     def process_steps(self, flow, data):
         for step in flow:
             logging.debug("Processing Step: " +  str(step))
+
             if step["Type"] == "rule":
                 result = self.processRule(step, data)
                 logging.debug("Result: " + str(result))
                 return result
 
-            if step["Type"] == "ruleset":
-                pass
+            elif step["Type"] == "ruleset":
+                logging.debug("RuleSet found, continuing recursively.")
+                rulesetResults = []
+                for rule in step["Rules"]:
+                    logging.debug("Rule sent #149:" + str(rule) + str(type(rule)))
+                    rulesetResults.append(self.process_steps([rule], data))
+                return RuleOperations.operations[step["Match"]](rulesetResults)
 
 
 if __name__ == "__main__":
@@ -156,36 +161,50 @@ if __name__ == "__main__":
     db_connect_url = "mongodb://localhost:27017/"
 
     rules = RuleManager(db="local", db_address=db_connect_url)
-    rules.add_rule_json_as_string("guray", """
+    rules.add_rule_json_as_string("guray2", """
     {
-        "Type": "rule",
+        "Type": "ruleset",
         "Match": "all",
-        "WhatToDo": [
-            {
-                "internalAction": "sendTelegramMessage"
-            },
-            {
-                "runFunction": "myFunction"
-            }
-        ],
         "Rules": [
             {
-                "field": "responseTimeInSeconds",
-                "condition": "lte",
-                "value": 3.45
+                "Type": "rule",
+                "Match": "all",
+                "Rules": [
+                    {
+                        "field": "responseTimeInSeconds",
+                        "condition": "lte",
+                        "value": 3.45
+                    },
+                    {
+                        "field": "statusCode",
+                        "condition": "gte",
+                        "value": 200
+                    }
+                ]
             },
             {
-                "field": "statusCode",
-                "condition": "gte",
-                "value": 200
+                "Type": "rule",
+                "Match": "any",
+                "Rules": [
+                    {
+                        "field": "responseTimeInSeconds",
+                        "condition": "lte",
+                        "value": 3.45
+                    },
+                    {
+                        "field": "statusCode",
+                        "condition": "gte",
+                        "value": 200
+                    }
+                ]
             }
         ]
     }
     """)
 
-    rules.execute_rule_json_as_string("guray", """
+    rules.execute_rule_json_as_string("guray2", """
     {
-        "responseTimeInSeconds": 5,
+        "responseTimeInSeconds": 10,
         "statusCode": 201
     }
     """)
