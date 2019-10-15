@@ -39,25 +39,38 @@ class RuleOperations(object):
 
 
 class RuleManager(object):
-    def __init__(self, db='local', db_address='', db_name='rulepipe'):
+    def __init__(self):
         logging.info('Rule manager initializing')
         logging.debug('Database client initializing')
-        self.init_database_client(db, db_address, db_name)
-        self.init_redis_client()
+        self.init_database_client()
+        
+        if(os.getenv("use_caching") == "True" or os.getenv("use_caching") == "true"):
+            self.init_redis_client()
 
-    def init_database_client(self, db, db_address, db_name):
+    def init_database_client(self):
         """
         Initializes a Rule Management with specified database.
 
         By default, local (and in-memory) dictionary object is used as a DB.
         In "local" db, it will not be persistent.
         """
+        db              = os.getenv("db_type")
+        db_ip           = os.getenv("db_server")
+        db_port         = os.getenv("db_port")
+        db_user         = os.getenv("db_user")
+        db_pass         = os.getenv("db_pass")
+        db_name         = os.getenv("db_name")
+        db_authenticate = os.getenv("db_authenticate")
+        
         if db == "local":
             logging.info("Database type: In-memory database")
             self.db = LocalDB()
         elif db == "mongo" or db == "mongodb":
             logging.info("Database type: MongoDB.")
-            self.db = Mongo()
+            if(db_authenticate == 'True' or db_authenticate == 'true' or db_authenticate == '1'):
+                self.db = Mongo(ip=db_ip, port=db_port, username=db_user, password=db_pass, auth=True, db_name=db_name)
+            else:
+                self.db = Mongo(ip=db_ip, port=db_port, db_name=db_name)
         else:
             logging.error("This database type is not supporting.")
 
@@ -86,6 +99,13 @@ class RuleManager(object):
         """
         Runs rule using given data and returns the result
         """
+        if(os.getenv("use_caching") == 'True' or os.getenv("use_caching") == 'true'):
+            return self.execute_rule_json_with_caching(name, data)
+        else:
+            return self.execute_rule_json_without_caching(name, data)
+
+
+    def execute_rule_json_with_caching(self, name, data):
         rule_key = name + "_" + str(data)
         if(self.redis.get(rule_key) == None):
             logging.debug("Statement not found in cache, executing...")
@@ -103,6 +123,11 @@ class RuleManager(object):
         else:
             logging.debug("Statement found in cache, fetching...")
             response = str(self.redis.get(rule_key), 'utf-8')
+        return response
+
+    def execute_rule_json_without_caching(self, name, data):
+        flow = self.db.get_flow(name)
+        response = self.process_steps(flow, data)
         return response
 
     def add_rule_code(self, name, rule):
@@ -153,14 +178,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     load_dotenv()
 
-    db_ip = os.getenv("mdb_server")
-    db_port = os.getenv("mdb_port")
-    db_user = os.getenv("mdb_user")
-    db_pass = os.getenv("mdb_pass")
-    #db_connect_url = "mongodb://" + db_user + ":" + db_pass + "@" + db_ip + ":" + str(db_port)
-    db_connect_url = "mongodb://localhost:27017/"
-
-    rules = RuleManager(db="local", db_address=db_connect_url)
+    rules = RuleManager()
     rules.add_rule_json_as_string("guray2", """
     {
         "Type": "ruleset",

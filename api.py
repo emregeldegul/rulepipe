@@ -1,10 +1,8 @@
 from flask import Flask, request
 from rulepipe import *
 
-db_connect_url = "mongodb://localhost:27017/"
-
 app = Flask(__name__)
-rules = RuleManager(db="mongo", db_address=db_connect_url)
+rules = RuleManager()
 
 @app.route('/')
 def root():
