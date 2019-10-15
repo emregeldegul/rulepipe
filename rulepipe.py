@@ -6,6 +6,16 @@ from db_mongo import Mongo
 from db_local import LocalDB
 from dotenv import load_dotenv
 
+class Data(dict):
+    def __getitem__(self, name):
+        print("__getitem__ called for {}".format(name))
+        fields = name.split('.')
+        c = self
+        for field in fields:
+            print(c, field)
+            c = dict.__getitem__(c, field)
+        return c
+
 class RuleOperations(object):
 
     operations = {
@@ -93,7 +103,7 @@ class RuleManager(object):
         """
         Runs a JSON formatted rule string and returns the result
         """
-        return self.execute_rule_json(name, json.loads(data_string))
+        return self.execute_rule_json(name, Data(json.loads(data_string)))
 
     def execute_rule_json(self, name, data):
         """
@@ -210,9 +220,9 @@ if __name__ == "__main__":
                         "value": 3.45
                     },
                     {
-                        "field": "statusCode",
+                        "field": "details.importance",
                         "condition": "gte",
-                        "value": 200
+                        "value": 5
                     }
                 ]
             }
@@ -223,6 +233,10 @@ if __name__ == "__main__":
     rules.execute_rule_json_as_string("guray2", """
     {
         "responseTimeInSeconds": 10,
-        "statusCode": 201
+        "statusCode": 201,
+        "details": {
+            "name": "mymetric",
+            "importance": 7
+        }
     }
     """)
