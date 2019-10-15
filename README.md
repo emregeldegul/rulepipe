@@ -117,8 +117,6 @@ In Progress:
 
 To Do:
 
-- [ ] Support subfields in JSON (probably needs dot notation)
-- [ ] Support nested rules
 - [ ] Support defining custom conditions
 - [ ] Support predefined actions
 - [ ] Support defining custom actions
@@ -133,3 +131,5 @@ Completed:
 - [x] Add webhooks for Telegram to track progress
 - [x] Add logging and use log levels
 - [x] Read database information from config file and environment variables
+- [x] Support subfields in JSON (probably needs dot notation)
+- [x] Support nested rules
