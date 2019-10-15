@@ -113,6 +113,7 @@ be as:
 In Progress:
 
 - [ ] Set hash of data as Redis keys
+- [ ] Make caching optional
 
 To Do:
 
