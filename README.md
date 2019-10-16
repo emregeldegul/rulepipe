@@ -13,30 +13,15 @@ RulePipe is a declarative, scalable, highly configurable rule engine. Usage area
 
 ## Installation
 
-RulePipe uses no external Python package as a module. But, to use RulePipe
-as a service with REST API, install flask package. RulePipe is written in
-Python3.
-
-### Pre-installation
-
-Please install the necessary packages.
-
-```sh
-~$ pip install -r requirements.txt
-```
-
-And rename the .env.example file to .env.
-
-```sh
-~$ mv .env.example .env
-```
-
-Then we make the database settings in the .env file.
+RulePipe uses some Python package as a module. These packages must be installed during installation.
 
 ### Run RulePipe REST API Service
 
 - Clone this repository `git clone https://git.ray.kim/guray/rulepipe.git`
 - Change directory to repository directory `cd rulepipe`
+- Install the necessary packages `$ pip install -r requirements.txt`
+- Rename the .env.example file to .env `mv .env.example .env`
+- Change the database settings in the .env file.
 - Run flask service `export FLASK_APP=api.py && python3 -m flask run`
 
 Is enough for installing and using RulePile as a RESTful service.
