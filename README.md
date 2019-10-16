@@ -113,7 +113,6 @@ be as:
 In Progress:
 
 - [ ] Set hash of data as Redis keys
-- [ ] Make caching optional
 
 To Do:
 
@@ -133,3 +132,4 @@ Completed:
 - [x] Read database information from config file and environment variables
 - [x] Support subfields in JSON (probably needs dot notation)
 - [x] Support nested rules
+- [x] Make caching optional
