@@ -138,6 +138,7 @@ class RuleManager(object):
         statement_name_hash = self.md5(name + "_" + str(data))
         statement_time_hash = self.md5(statement_name_hash + "_cache_time")
 
+        logging.debug("Checking Rule flow existance in cache with { rule_name_hash: " + rule_name_hash + " , rule_time_hash: " + rule_time_hash + " }")
         if(self.redis.get(rule_name_hash) == None or self.redis.get(rule_time_hash) == None):
             logging.debug("Rule flow not found in cache, fetching from db...")
             flow_db_record = self.db.get_flow(name)
@@ -147,7 +148,9 @@ class RuleManager(object):
 
         logging.debug("Rule flow found in cache, fetching...")
         flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
+        logging.debug("Rule Flow: " + str(flow))
 
+        logging.debug("Checking Statement result existance in cache with { statement_name_hash: " + statement_name_hash + " , statement_time_hash: " + statement_time_hash + " }")
         if(self.redis.get(statement_name_hash) == None or self.is_cached_statement_updated(rule_time_hash, statement_time_hash)):
             logging.debug("rule_time : " + str(self.redis.get(rule_time_hash)) + ", statement_time : " + str(self.redis.get(statement_time_hash)) + "\n")
             logging.debug("Statement not found or become old in cache , executing...")
@@ -158,6 +161,7 @@ class RuleManager(object):
         else:
             logging.debug("Statement found in cache, fetching...")
             response = str(self.redis.get(statement_name_hash), 'utf-8')
+            logging.debug("Statement: " + str(response))
 
         return response
 
@@ -215,7 +219,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     rules = RuleManager()
-    """
+    
     rules.add_rule_json_as_string("guray2", """
     {
         "Type": "ruleset",
@@ -256,7 +260,7 @@ if __name__ == "__main__":
         ]
     }
     """)
-    """
+    
 
     print(rules.execute_rule_json_as_string("guray2", """
     {
@@ -264,7 +268,7 @@ if __name__ == "__main__":
         "statusCode": 200,
         "details": {
             "name": "mymetric",
-            "importance": 8
+            "importance": 7
         }
     }
     """))
