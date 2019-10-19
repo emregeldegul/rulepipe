@@ -1,11 +1,12 @@
 import os
+import time
 import json
 import logging
+import hashlib
 from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
 from dotenv import load_dotenv
-
 class Data(dict):
     def __getitem__(self, name):
         print("__getitem__ called for {}".format(name))
@@ -98,6 +99,11 @@ class RuleManager(object):
         Adds a rule into Rule Database as JSON
         """
         self.db.add_rule(name, rule)
+        if(os.getenv("use_caching") == 'True' or os.getenv("use_caching") == 'true'):
+            rule_name_hash = self.md5(name)
+            rule_time_hash = self.md5(name + "_cache_time")
+            self.redis.set(rule_name_hash, str(rule))
+            self.redis.set(rule_time_hash, str(time.time()))
 
     def execute_rule_json_as_string(self, name, data_string):
         """
@@ -114,25 +120,45 @@ class RuleManager(object):
         else:
             return self.execute_rule_json_without_caching(name, data)
 
+    def md5(self, text):
+        return hashlib.md5(str(text).encode()).hexdigest()
+
+    def is_cached_statement_updated(self, rule_time_hash, statement_time_hash):
+        rule_time = self.redis.get(rule_time_hash)
+        statement_time = self.redis.get(statement_time_hash)
+
+        if(rule_time == None or statement_time == None):
+            return True
+
+        return float(rule_time) > float(statement_time)
 
     def execute_rule_json_with_caching(self, name, data):
-        rule_key = name + "_" + str(data)
-        if(self.redis.get(rule_key) == None):
-            logging.debug("Statement not found in cache, executing...")
-            if(self.redis.get(name) == None):
-                logging.debug("Rule flow not found in cache, fetching from db...")
-                flow = self.db.get_flow(name)
-                logging.debug("Rule fetched, caching...")
-                self.redis.set(name, str(flow))
-            else:
-                logging.debug("Rule flow found in cache, fetching...")
-                flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
+        rule_name_hash = self.md5(name)
+        rule_time_hash = self.md5(name + "_cache_time")
+        statement_name_hash = self.md5(name + "_" + str(data))
+        statement_time_hash = self.md5(statement_name_hash + "_cache_time")
+
+        if(self.redis.get(rule_name_hash) == None or self.redis.get(rule_time_hash) == None):
+            logging.debug("Rule flow not found in cache, fetching from db...")
+            flow_db_record = self.db.get_flow(name)
+            logging.debug("Rule fetched from db, caching...")
+            self.redis.set(rule_name_hash, str(flow_db_record))
+            self.redis.set(rule_time_hash, str(time.time()))
+
+        logging.debug("Rule flow found in cache, fetching...")
+        flow = json.loads(str(self.redis.get(name), 'utf-8').replace("\'", "\""))
+
+        if(self.redis.get(statement_name_hash) == None or self.is_cached_statement_updated(rule_time_hash, statement_time_hash)):
+            logging.debug("rule_time : " + str(self.redis.get(rule_time_hash)) + ", statement_time : " + str(self.redis.get(statement_time_hash)) + "\n")
+            logging.debug("Statement not found or become old in cache , executing...")
             response = self.process_steps(flow, data)
             logging.debug("Statement execute completed. Caching...")
-            self.redis.set(rule_key, str(response))
+            self.redis.set(statement_name_hash, str(response))
+            self.redis.set(statement_time_hash, str(time.time()))
         else:
             logging.debug("Statement found in cache, fetching...")
-            response = str(self.redis.get(rule_key), 'utf-8')
+            response = str(self.redis.get(statement_name_hash), 'utf-8')
+
         return response
 
     def execute_rule_json_without_caching(self, name, data):
@@ -189,6 +215,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     rules = RuleManager()
+    """
     rules.add_rule_json_as_string("guray2", """
     {
         "Type": "ruleset",
@@ -201,7 +228,7 @@ if __name__ == "__main__":
                     {
                         "field": "responseTimeInSeconds",
                         "condition": "lte",
-                        "value": 3.45
+                        "value": 0.455
                     },
                     {
                         "field": "statusCode",
@@ -229,14 +256,15 @@ if __name__ == "__main__":
         ]
     }
     """)
+    """
 
-    rules.execute_rule_json_as_string("guray2", """
+    print(rules.execute_rule_json_as_string("guray2", """
     {
-        "responseTimeInSeconds": 10,
-        "statusCode": 201,
+        "responseTimeInSeconds": 1,
+        "statusCode": 200,
         "details": {
             "name": "mymetric",
-            "importance": 7
+            "importance": 8
         }
     }
-    """)
+    """))
