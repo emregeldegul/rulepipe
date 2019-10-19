@@ -97,7 +97,6 @@ be as:
 
 In Progress:
 
-- [ ] Set hash of data as Redis keys
 
 To Do:
 
@@ -118,3 +117,4 @@ Completed:
 - [x] Support subfields in JSON (probably needs dot notation)
 - [x] Support nested rules
 - [x] Make caching optional
+- [x] Set hash of data as Redis keys
