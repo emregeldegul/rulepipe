@@ -119,3 +119,4 @@ Completed:
 - [x] Support nested rules
 - [x] Make caching optional
 - [x] Set hash of data as Redis keys
+- [x] Enable precedence in environment variables
