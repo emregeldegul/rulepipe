@@ -104,6 +104,7 @@ To Do:
 - [ ] Support predefined actions
 - [ ] Support defining custom actions
 - [ ] Support for OpenTracing
+- [ ] Dockerize and prepare Docker Compose file
 
 Completed:
 
