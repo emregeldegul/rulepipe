@@ -238,27 +238,27 @@ class RuleManager(object):
 
     def processRule(self, step, data):
         results = []
-        for rule in step["Rules"]:
+        for rule in step["rules"]:
             results.append(RuleOperations.eval(rule, data))
-        return RuleOperations.operations[step["Match"]](results)
+        return RuleOperations.operations[step["match"]](results)
 
     def process_steps(self, flow, data):
         if(flow):
             for step in flow:
                 logging.debug("Processing Step: " +  str(step))
 
-                if step["Type"] == "rule":
+                if step["type"] == "rule":
                     result = self.processRule(step, data)
                     logging.debug("Result: " + str(result))
                     return result
 
-                elif step["Type"] == "ruleset":
+                elif step["type"] == "ruleset":
                     logging.debug("RuleSet found, continuing recursively.")
                     rulesetResults = []
-                    for rule in step["Rules"]:
+                    for rule in step["rules"]:
                         logging.debug("Rule sent #149:" + str(rule) + str(type(rule)))
                         rulesetResults.append(self.process_steps([rule], data))
-                    return RuleOperations.operations[step["Match"]](rulesetResults)
+                    return RuleOperations.operations[step["match"]](rulesetResults)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
@@ -267,13 +267,13 @@ if __name__ == "__main__":
     
     rules.add_rule_json_as_string("guray6", """
     {
-        "Type": "ruleset",
-        "Match": "all",
-        "Rules": [
+        "type": "ruleset",
+        "match": "all",
+        "rules": [
             {
-                "Type": "rule",
-                "Match": "all",
-                "Rules": [
+                "type": "rule",
+                "match": "all",
+                "rules": [
                     {
                         "field": "responseTimeInSeconds",
                         "condition": "lte",
@@ -287,9 +287,9 @@ if __name__ == "__main__":
                 ]
             },
             {
-                "Type": "rule",
-                "Match": "any",
-                "Rules": [
+                "type": "rule",
+                "match": "any",
+                "rules": [
                     {
                         "field": "responseTimeInSeconds",
                         "condition": "lte",
