@@ -7,6 +7,7 @@ from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
 from dotenv import load_dotenv
+
 class Data(dict):
     def __getitem__(self, name):
         print("__getitem__ called for {}".format(name))
@@ -122,19 +123,21 @@ class RuleManager(object):
         """
         Adds a JSON formatted string rule into Rule Database as JSON
         """
-        self.add_rule_json(name, json.loads(rule_string))
+        return self.add_rule_json(name, json.loads(rule_string))
 
     def add_rule_json(self, name, rule):
         """
         Adds a rule into Rule Database as JSON
         """
-        self.db.add_rule(name, rule)
-        if(self.ENV["USE_CACHE"]):
+        is_added_to_database = self.db.add_rule(name, rule)
+        if is_added_to_database and self.ENV["USE_CACHE"]:
             logging.debug("New rule caching...")
             rule_name_hash = self.md5(name)
             rule_time_hash = self.md5(name + "_cache_time")
             self.redis.set(rule_name_hash, str(rule))
             self.redis.set(rule_time_hash, str(time.time()))
+
+        return True
 
     def execute_rule_json_as_string(self, name, data_string):
         """
