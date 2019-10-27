@@ -226,6 +226,12 @@ class RuleManager(object):
         logging.critical("This function is not activated yet: add_rule_code")
         self.add_rule_json(name, rule)
 
+    def get_rule_list(self):
+        """
+        Returns saved rules list.
+        """
+        return list(self.db.get_rules())
+
     def execute_rule_code(self, name, data):
         """
         Runs rule using given data and returns the result
@@ -265,6 +271,8 @@ if __name__ == "__main__":
 
     rules = RuleManager()
     
+    print(rules.get_rule_list())
+
     rules.add_rule_json_as_string("guray6", """
     {
         "type": "ruleset",
@@ -317,3 +325,5 @@ if __name__ == "__main__":
         }
     }
     """))
+
+    print(rules.get_rule_list())
