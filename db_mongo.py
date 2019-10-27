@@ -28,4 +28,7 @@ class Mongo:
         return flow
 
     def get_rules(self):
-        return self.db.keys()
+        rule_names = []
+        for rule in self.db["rules"].find({},{"_id": 0, "name": 1}):
+            rule_names.append(rule['name'])
+        return rule_names
