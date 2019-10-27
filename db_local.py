@@ -13,3 +13,6 @@ class LocalDB:
             logging.error("Rule not found.")
             return
         return self.db[name]
+
+    def get_rules(self):
+        return self.db.keys()

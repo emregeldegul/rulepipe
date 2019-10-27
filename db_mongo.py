@@ -26,3 +26,6 @@ class Mongo:
         for item in self.db["rules"].find({"name": name}):
             flow.append(json.loads(item["rule"].replace("\'", "\"")))
         return flow
+
+    def get_rules(self):
+        return self.db.keys()
