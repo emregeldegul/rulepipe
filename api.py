@@ -19,10 +19,10 @@ def execute_rule(name):
   response = rules.execute_rule_json(name, request.get_json())
   return {"response": str(response)}
 
-@app.route('/rules', methods=['GET', 'POST'])
-@app.route('/get_rules', methods=['GET', 'POST'])
-@app.route('/get_rule_list', methods=['GET', 'POST'])
-@app.route('/get_rules_list', methods=['GET', 'POST'])
+@app.route('/rules', methods=['GET'])
+@app.route('/get_rules', methods=['GET'])
+@app.route('/get_rule_list', methods=['GET'])
+@app.route('/get_rules_list', methods=['GET'])
 def get_rules():
   response = rules.get_rule_list()
   return {"rule_list": str(response)}
