@@ -136,6 +136,13 @@ class RuleManager(object):
             self.redis.set(rule_name_hash, str(rule))
             self.redis.set(rule_time_hash, str(time.time()))
 
+    def delete_rule(self, name):
+        if(self.ENV["USE_CACHE"]):
+            rule_name_hash = self.md5(name)
+            rule_time_hash = self.md5(name + "_cache_time")
+            self.redis.delete(rule_name_hash, rule_time_hash)
+        return self.db.delete_rule(name)
+
     def execute_rule_json_as_string(self, name, data_string):
         """
         Runs a JSON formatted rule string and returns the result
@@ -325,5 +332,11 @@ if __name__ == "__main__":
         }
     }
     """))
+
+
+    print(rules.get_rule_list())
+
+    print(rules.delete_rule("guray6"))
+    print(rules.delete_rule("guray6"))
 
     print(rules.get_rule_list())

@@ -26,7 +26,7 @@ class Mongo:
     def delete_rule(self, name):
         if not self.is_rule_available(name):
             return False
-        deleted_item_count = self.db["rules"].delete_one({"name": name}).deleted_count
+        deleted_item_count = self.db["rules"].delete_many({"name": name}).deleted_count
         return deleted_item_count > 0
 
     def is_rule_available(self, name):
