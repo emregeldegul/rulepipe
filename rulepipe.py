@@ -136,8 +136,14 @@ class RuleManager(object):
             rule_time_hash = self.md5(name + "_cache_time")
             self.redis.set(rule_name_hash, str(rule))
             self.redis.set(rule_time_hash, str(time.time()))
-
         return True
+
+    def delete_rule(self, name):
+        if(self.ENV["USE_CACHE"]):
+            rule_name_hash = self.md5(name)
+            rule_time_hash = self.md5(name + "_cache_time")
+            self.redis.delete(rule_name_hash, rule_time_hash)
+        return self.db.delete_rule(name)
 
     def execute_rule_json_as_string(self, name, data_string):
         """
@@ -229,6 +235,12 @@ class RuleManager(object):
         logging.critical("This function is not activated yet: add_rule_code")
         self.add_rule_json(name, rule)
 
+    def get_rule_list(self):
+        """
+        Returns saved rules list.
+        """
+        return list(self.db.get_rules())
+
     def execute_rule_code(self, name, data):
         """
         Runs rule using given data and returns the result
@@ -268,6 +280,8 @@ if __name__ == "__main__":
 
     rules = RuleManager()
     
+    print(rules.get_rule_list())
+
     rules.add_rule_json_as_string("guray6", """
     {
         "type": "ruleset",
@@ -320,3 +334,11 @@ if __name__ == "__main__":
         }
     }
     """))
+
+
+    print(rules.get_rule_list())
+
+    print(rules.delete_rule("guray6"))
+    print(rules.delete_rule("guray6"))
+
+    print(rules.get_rule_list())
