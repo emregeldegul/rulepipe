@@ -13,6 +13,12 @@ def add_rule(name):
   rules.add_rule_json(name, request.get_json())
   return 'OK\n'
 
+@app.route('/delete_rule/<name>', methods=['DELETE'])
+@app.route('/remove_rule/<name>', methods=['DELETE'])
+def delete_rule(name):
+  response = rules.delete_rule(name)
+  return {'delete_status': response}
+
 @app.route('/execute_rule/<name>', methods=['POST'])
 def execute_rule(name):
   print(request.get_json())
