@@ -131,8 +131,14 @@ class RuleManager(object):
         """
         Adds a rule into Rule Database as JSON
         """
+
+        if 'type' not in rule:
+            error_message = "At least one 'type' value required to add new rule."
+            logging.error(error_message)
+            raise KeyError(error_message)
+
         is_added_to_database = self.db.add_rule(name, rule)
-        
+
         if is_added_to_database and self.ENV["USE_CACHE"]:
             logging.debug("New rule caching...")
             rule_name_hash = self.md5(name)
