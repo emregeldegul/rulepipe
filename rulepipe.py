@@ -8,7 +8,6 @@ from db_mongo import Mongo
 from db_local import LocalDB
 from dotenv import load_dotenv
 
-
 class Data(dict):
     def __getitem__(self, name):
         print("__getitem__ called for {}".format(name))
@@ -125,7 +124,7 @@ class RuleManager(object):
         """
         Adds a JSON formatted string rule into Rule Database as JSON
         """
-        self.add_rule_json(name, json.loads(rule_string))
+        return self.add_rule_json(name, json.loads(rule_string))
 
     def add_rule_json(self, name, rule):
         """
@@ -145,6 +144,14 @@ class RuleManager(object):
             rule_time_hash = self.md5(name + "_cache_time")
             self.redis.set(rule_name_hash, str(rule))
             self.redis.set(rule_time_hash, str(time.time()))
+        return True
+
+    def delete_rule(self, name):
+        if(self.ENV["USE_CACHE"]):
+            rule_name_hash = self.md5(name)
+            rule_time_hash = self.md5(name + "_cache_time")
+            self.redis.delete(rule_name_hash, rule_time_hash)
+        return self.db.delete_rule(name)
 
         return is_added_to_database
 
