@@ -7,6 +7,7 @@ from redis import Redis
 from db_mongo import Mongo
 from db_local import LocalDB
 from dotenv import load_dotenv
+
 class Data(dict):
     def __getitem__(self, name):
         print("__getitem__ called for {}".format(name))
@@ -16,6 +17,7 @@ class Data(dict):
             print(c, field)
             c = dict.__getitem__(c, field)
         return c
+
 
 class RuleOperations(object):
 
@@ -97,7 +99,7 @@ class RuleManager(object):
             self.db = LocalDB()
         elif self.ENV["DB_TYPE"] == "mongo" or self.ENV["DB_TYPE"] == "mongodb":
             logging.info("Database type: MongoDB.")
-            if(self.ENV["DB_AUTHENTICATE"]):
+            if self.ENV["DB_AUTHENTICATE"]:
                 self.db = Mongo(
                     ip      =self.ENV["DB_IP"], 
                     port    =self.ENV["DB_PORT"], 
@@ -122,22 +124,39 @@ class RuleManager(object):
         """
         Adds a JSON formatted string rule into Rule Database as JSON
         """
-        self.add_rule_json(name, json.loads(rule_string))
+        return self.add_rule_json(name, json.loads(rule_string))
 
     def add_rule_json(self, name, rule):
         """
         Adds a rule into Rule Database as JSON
         """
-        self.db.add_rule(name, rule)
-        if(self.ENV["USE_CACHE"]):
+
+        if 'type' not in rule:
+            error_message = "At least one 'type' value required to add new rule."
+            logging.error(error_message)
+            raise KeyError(error_message)
+
+        is_added_to_database = self.db.add_rule(name, rule)
+
+        if is_added_to_database and self.ENV["USE_CACHE"]:
             logging.debug("New rule caching...")
             rule_name_hash = self.md5(name)
             rule_time_hash = self.md5(name + "_cache_time")
             self.redis.set(rule_name_hash, str(rule))
             self.redis.set(rule_time_hash, str(time.time()))
+        return True
 
     def delete_rule(self, name):
         if(self.ENV["USE_CACHE"]):
+            rule_name_hash = self.md5(name)
+            rule_time_hash = self.md5(name + "_cache_time")
+            self.redis.delete(rule_name_hash, rule_time_hash)
+        return self.db.delete_rule(name)
+
+        return is_added_to_database
+
+    def delete_rule(self, name):
+        if self.ENV["USE_CACHE"]:
             rule_name_hash = self.md5(name)
             rule_time_hash = self.md5(name + "_cache_time")
             self.redis.delete(rule_name_hash, rule_time_hash)
@@ -153,7 +172,7 @@ class RuleManager(object):
         """
         Runs rule using given data and returns the result
         """
-        if(self.ENV["USE_CACHE"] and not self.redis == None):
+        if self.ENV["USE_CACHE"] and not self.redis == None:
             logging.debug("Checking is Redis connected : " + str(self.redis.ping()))
             return self.execute_rule_json_with_caching(name, data)
         else:
@@ -189,7 +208,7 @@ class RuleManager(object):
         ):
             logging.debug("Rule flow not found in cache, fetching from db...")
             flow_db_record = self.db.get_flow(name)
-            if(flow_db_record):
+            if flow_db_record:
                 logging.debug("Rule fetched from db, caching...")
                 self.redis.set(rule_name_hash, str(flow_db_record))
                 self.redis.set(rule_time_hash, str(time.time()))

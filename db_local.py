@@ -4,9 +4,16 @@ class LocalDB:
         self.db = {}
 
     def add_rule(self, name, rule):
-        if not self.is_rule_avaliable(name):
-            self.db[name] = []
+        if self.is_rule_avaliable(name):
+            error_message = "Couldn't create new rule, rule named by {0} already exists.".format(name)
+            
+            logging.error(error_message)
+            raise NameError(error_message)
+
+        self.db[name] = []
         self.db[name].append(rule)
+
+        return True
 
     def delete_rule(self, name):
         if not self.is_rule_avaliable(name):
@@ -19,8 +26,11 @@ class LocalDB:
 
     def get_flow(self, name):
         if not self.is_rule_avaliable(name):
-            logging.error("Rule not found.")
-            return
+            error_message = "Rule '{0}' not found.".format(name)
+            
+            logging.error(error_message)
+            raise KeyError(error_message)
+            
         return self.db[name]
 
     def get_rules(self):
