@@ -20,19 +20,30 @@ class Mongo:
 
     def add_rule(self, name, rule):
         if self.is_rule_available(name):
-            self.delete_rule(name)
+            error_message = "Couldn't create new rule, rule named by {0} already exists.".format(name)
+            
+            logging.error(error_message)
+            raise NameError(error_message)
+
         return self.db["rules"].insert_one({"name": name, "rule": str(rule)})
 
     def delete_rule(self, name):
         if not self.is_rule_available(name):
             return False
         deleted_item_count = self.db["rules"].delete_many({"name": name}).deleted_count
-        return deleted_item_count > 0
+        is_deleted = deleted_item_count > 0
+        return is_deleted
 
     def is_rule_available(self, name):
         return not self.db["rules"].find_one({"name": name}) == None
 
     def get_flow(self, name):
+        if not self.is_rule_available(name):
+            error_message = "Rule '{0}' not found.".format(name)
+            
+            logging.error(error_message)
+            raise KeyError(error_message)
+
         flow = []
         for item in self.db["rules"].find({"name": name}):
             flow.append(json.loads(item["rule"].replace("\'", "\"")))
