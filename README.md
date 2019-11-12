@@ -36,9 +36,9 @@ To add a simple rule to your engine:
 ~~~sh
 curl --header "Content-Type: application/json" --request POST --data '
   {
-    "Type": "rule",
-    "Match": "all",
-    "Rules": [
+    "type": "rule",
+    "match": "all",
+    "rules": [
       {
         "field": "responseTimeInSeconds",
         "condition": "lte",
