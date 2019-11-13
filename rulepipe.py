@@ -31,8 +31,11 @@ class RuleOperations(object):
         "mod": lambda a,b: a % b,
         "sum": lambda args: sum(args),
         "any": lambda args: any(args),
-        "all": lambda args: all(args)
+        "all": lambda args: all(args),
+        "fromfile": lambda d,fname: RuleOperations.fromfile(d, fname)
         }
+
+    files = {}
 
     @staticmethod
     def eval(rule, data):
@@ -49,6 +52,23 @@ class RuleOperations(object):
             condition, data, value))
         logging.debug(RuleOperations.operations[condition](data, value))
         return RuleOperations.operations[condition](data, value)
+    
+    @staticmethod
+    def fromfile(d, fname):
+        print(d, fname)
+        if not fname in RuleOperations.files.keys():
+            hashes = []
+            for line in open(fname, 'r').readlines():
+                hashes.append((line.strip().split(':')[0]))
+
+            RuleOperations.files[fname] = hashes
+            print(list(RuleOperations.files[fname]))
+        
+        print(RuleOperations.files[fname])
+
+        return d in RuleOperations.files[fname]
+
+
 
 
 class RuleManager(object):
