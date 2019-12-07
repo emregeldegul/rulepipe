@@ -10,11 +10,9 @@ from dotenv import load_dotenv
 
 class Data(dict):
     def __getitem__(self, name):
-        print("__getitem__ called for {}".format(name))
         fields = name.split('.')
         c = self
         for field in fields:
-            print(c, field)
             c = dict.__getitem__(c, field)
         return c
 
@@ -55,20 +53,14 @@ class RuleOperations(object):
     
     @staticmethod
     def fromfile(d, fname):
-        print(d, fname)
         if not fname in RuleOperations.files.keys():
             hashes = []
             for line in open(fname, 'r').readlines():
                 hashes.append((line.strip().split(':')[0]))
 
             RuleOperations.files[fname] = hashes
-            print(list(RuleOperations.files[fname]))
-        
-        print(RuleOperations.files[fname])
 
         return d in RuleOperations.files[fname]
-
-
 
 
 class RuleManager(object):
@@ -311,71 +303,3 @@ class RuleManager(object):
                         logging.debug("Rule sent #149:" + str(rule) + str(type(rule)))
                         rulesetResults.append(self.process_steps([rule], data))
                     return RuleOperations.operations[step["match"]](rulesetResults)
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
-    rules = RuleManager()
-    
-    print(rules.get_rule_list())
-
-    rules.add_rule_json_as_string("guray6", """
-    {
-        "type": "ruleset",
-        "match": "all",
-        "rules": [
-            {
-                "type": "rule",
-                "match": "all",
-                "rules": [
-                    {
-                        "field": "responseTimeInSeconds",
-                        "condition": "lte",
-                        "value": 0.45
-                    },
-                    {
-                        "field": "statusCode",
-                        "condition": "gte",
-                        "value": 200
-                    }
-                ]
-            },
-            {
-                "type": "rule",
-                "match": "any",
-                "rules": [
-                    {
-                        "field": "responseTimeInSeconds",
-                        "condition": "lte",
-                        "value": 3.45
-                    },
-                    {
-                        "field": "details.importance",
-                        "condition": "gte",
-                        "value": 5
-                    }
-                ]
-            }
-        ]
-    }
-    """)
-    
-
-    print(rules.execute_rule_json_as_string("guray6", """
-    {
-        "responseTimeInSeconds": 0.1,
-        "statusCode": 200,
-        "details": {
-            "name": "mymetric",
-            "importance": 7
-        }
-    }
-    """))
-
-
-    print(rules.get_rule_list())
-
-    print(rules.delete_rule("guray6"))
-    print(rules.delete_rule("guray6"))
-
-    print(rules.get_rule_list())
