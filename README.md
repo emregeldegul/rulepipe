@@ -1,4 +1,4 @@
-# rulepipe <img src="https://git.ray.kim/guray/rulepipe/raw/branch/master/resource/100.png">
+# rulepipe <img src="https://raw.githubusercontent.com/peptr/rulepipe/master/resource/100.png">
 
 The rule engine you always deserved.
 
@@ -17,7 +17,7 @@ RulePipe uses some Python package as a module. These packages must be installed 
 
 ### Run RulePipe REST API Service
 
-- Clone this repository `git clone https://git.ray.kim/guray/rulepipe.git`
+- Clone this repository `git clone https://github.com/peptr/rulepipe.git`
 - Change directory to repository directory `cd rulepipe`
 - Install the necessary packages `$ pip install -r requirements.txt`
 - Rename the .env.example file to .env `mv .env.example .env`
