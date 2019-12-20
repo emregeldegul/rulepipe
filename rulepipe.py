@@ -167,15 +167,6 @@ class RuleManager(object):
         return True
 
     def delete_rule(self, name):
-        if(self.ENV["USE_CACHE"]):
-            rule_name_hash = self.md5(name)
-            rule_time_hash = self.md5(name + "_cache_time")
-            self.redis.delete(rule_name_hash, rule_time_hash)
-        return self.db.delete_rule(name)
-
-        return is_added_to_database
-
-    def delete_rule(self, name):
         if self.ENV["USE_CACHE"]:
             rule_name_hash = self.md5(name)
             rule_time_hash = self.md5(name + "_cache_time")
