@@ -4,8 +4,8 @@ import json
 import logging
 import hashlib
 from redis import Redis
-from db_mongo import Mongo
-from db_local import LocalDB
+from .interfaces.mongodb import Mongo
+from .interfaces.localdb import LocalDB
 from dotenv import load_dotenv
 
 class Data(dict):
