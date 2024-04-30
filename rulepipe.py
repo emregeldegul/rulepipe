@@ -310,7 +310,7 @@ if __name__ == "__main__":
     
     print(rules.get_rule_list())
 
-    rules.add_rule_json_as_string("guray6", """
+    rules.add_rule_json_as_string("emre6", """
     {
         "type": "ruleset",
         "match": "all",
@@ -352,7 +352,7 @@ if __name__ == "__main__":
     """)
     
 
-    print(rules.execute_rule_json_as_string("guray6", """
+    print(rules.execute_rule_json_as_string("emre6", """
     {
         "responseTimeInSeconds": 0.1,
         "statusCode": 200,
@@ -366,7 +366,7 @@ if __name__ == "__main__":
 
     print(rules.get_rule_list())
 
-    print(rules.delete_rule("guray6"))
-    print(rules.delete_rule("guray6"))
+    print(rules.delete_rule("emre6"))
+    print(rules.delete_rule("emre6"))
 
     print(rules.get_rule_list())
